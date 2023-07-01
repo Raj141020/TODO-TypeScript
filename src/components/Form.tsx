@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import Swal from 'sweetalert2';
+import React, { useEffect, useState, ChangeEvent, FormEvent } from "react";
+import { v4 as uuidv4 } from "uuid";
+import Swal from "sweetalert2";
 
 interface Todo {
   id: string;
@@ -25,7 +25,7 @@ const Form: React.FC<FormProps> = ({
   editTodo,
   setEditTodo,
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [filteredTasks, setFilteredTasks] = useState<Todo[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -41,24 +41,46 @@ const Form: React.FC<FormProps> = ({
     if (editTodo) {
       setInput(editTodo.title);
     } else {
-      setInput('');
+      setInput("");
     }
   }, [setInput, editTodo]);
 
-  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
   };
 
-  const onFormSubmit = (e: React.FormEvent) => {
+  const onFormSubmit = (e: FormEvent) => {
     e.preventDefault();
+
+    const isDuplicate = todo.some((task) => task.title === input);
+
+    if (isDuplicate) {
+      Swal.fire({
+        icon: "error",
+        title: "Duplicate Task",
+        text: "The task already exists.",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+      setInput("");
+      return;
+    }
+
     if (!editTodo) {
       setTodo([...todo, { id: uuidv4(), title: input, completed: false }]);
-      setInput('');
+      setInput("");
+      Swal.fire({
+        icon: "success",
+        title: "Created!",
+        text: "New task has been created.",
+        showConfirmButton: false,
+        timer: 1500,
+      });
     } else {
       updateTodo(input, editTodo.id, editTodo.completed);
       Swal.fire({
-        icon: 'success',
-        title: 'Updated!',
+        icon: "success",
+        title: "Updated!",
         text: `Data has been Updated.`,
         showConfirmButton: false,
         timer: 1500,
@@ -66,7 +88,7 @@ const Form: React.FC<FormProps> = ({
     }
   };
 
-  const onFormSubmit1 = (e: React.FormEvent) => {
+  const onFormSubmit1 = (e: FormEvent) => {
     e.preventDefault();
     const filteredTasks = todo.filter((task) =>
       task.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -75,11 +97,11 @@ const Form: React.FC<FormProps> = ({
     setIsSubmitted(true);
   };
 
-  const onSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onSearchInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
 
-    if (isSubmitted && value === '') {
+    if (isSubmitted && value === "") {
       setIsSubmitted(false);
       setFilteredTasks([]);
     }
@@ -88,14 +110,14 @@ const Form: React.FC<FormProps> = ({
   return (
     <div className="small-container">
       <form onSubmit={onFormSubmit}>
-        <input
-          type="text"
+        <textarea
+          className="text_box"
           placeholder="Enter your task"
           value={input}
           onChange={onInputChange}
         />
         <button className="button-add" type="submit">
-          {editTodo ? 'Ok' : 'Add'}
+          {editTodo ? "Ok" : "Add"}
         </button>
       </form>
       <div>
@@ -125,4 +147,4 @@ const Form: React.FC<FormProps> = ({
   );
 };
 
-export default Form
+export default Form;
